@@ -68,7 +68,7 @@ plt.title('Relationship between Object Count and Miss Distance')
 plt.axvline(mean_miss_distance, color='r', linestyle='solid', linewidth=2, label='Mean')
 plt.axvline(median_miss_distance, color='y', linestyle='solid', linewidth=2, label='Median')
 plt.legend()
-plt.show()
+# plt.show()
 plt.clf()
 #the majority of the objects had a miss distance just under 40000000 kms. There was also a high concentration of objects recorded with a much shorter miss distance, bringing down the overall average.
 #it is possible this is because it is easier to observe and spot objects that are in closer proximity to the earth. Furthermore it would be prudent to study near objects that have a higher probibility of striking the earth.
@@ -81,14 +81,39 @@ plt.title('Frequency of Object Relative Velocity')
 # plt.show()
 plt.clf()
 
+#find quantiles of relative velocity data
+relative_velocity_quartiles = np.quantile(neo.relative_velocity, [.25, .5, .75])
+print('relative velocity quantiles:', np.round(relative_velocity_quartiles))
+
 sns.histplot(x='relative_velocity', data=neo)
 plt.xlabel('Object Relative Velocity (kms/hr)')
 plt.ylabel('Frequency')
 plt.title('Frequency of Object Relative Velocity')
+plt.axvline(relative_velocity_quartiles[0], color='r', linestyle='solid', linewidth=2, label='Q1')
+plt.axvline(relative_velocity_quartiles[1], color='orange', linestyle='solid', linewidth=2, label='Q2')
+plt.axvline(relative_velocity_quartiles[2], color='y', linestyle='solid', linewidth=2, label='Q3')
+plt.legend()
 # plt.show()
 plt.clf()
 #the majority of the objects had a velocity near 35000 kms/s with some extreme outliers faster than 150000 kms/s
 
+#separate relative_velocity data by median, take quartiles of each subset and plot a histogram of the data
+low_relative_velocity = neo.relative_velocity[neo.relative_velocity <= median_relative_velocity]
+high_relative_velocity = neo.relative_velocity[neo.relative_velocity >= median_relative_velocity]
+
+low_velocity_quartiles = np.quantile(low_relative_velocity, [.25, .5, .75])
+print('low relative velocity quantiles:', low_velocity_quartiles)
+
+high_velocity_quartiles = np.quantile(high_relative_velocity, [.25, .5, .75])
+print('high relative velocity quantiles:', high_velocity_quartiles)
+
+plt.hist(low_relative_velocity, alpha=.6, bins=50, label='Low Velocity')
+plt.hist(high_relative_velocity, alpha=.6, bins=50, label='High Velocity')
+plt.legend()
+plt.show()
+plt.clf()
+
+print('\n')
 
 # #est_diameter_min
 neo['trimmed_diameter_min'] = neo.est_diameter_min < .1
@@ -209,4 +234,3 @@ print("covariance matrix for relative velocity and minimum estimated diameter:\n
 corr_velocity_diameter, p = pearsonr(neo.relative_velocity, neo.est_diameter_min)
 print('correlation between relative velocity and minimum estimated diameter:\n', np.round(corr_velocity_diameter, 2))
 #there is a positive correlation of .22 indicating a weak, insignificant linear association.
-
